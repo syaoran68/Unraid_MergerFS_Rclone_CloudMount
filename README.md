@@ -1,3 +1,12 @@
+# Unraid Cloud mount using MergerFS and Rclone
+
+This is a fork off of BinsonBuzz's package for rclone mounting. I will also credit SenPaiBox and the Unraid community for help in refining the scripts.
+
+In this fork i'll be updating some of scripts with fixes that i've added to my personal scripts. Some are for functionality.. others are for fixes for ease of use.
+
+
+
+----------------------------------------------ORIGINAL TEXT BELOW---------------------------------------------
 # Rclone Mount & Upload Scripts for Plex Users
 
 Collection of scripts to create rclone google mounts to allow fast launch times with Plex (or Emby).  
