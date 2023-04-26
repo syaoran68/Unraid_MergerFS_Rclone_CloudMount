@@ -3,10 +3,12 @@
 ######################
 #### Mount Script ####
 ######################
-## Version 0.96.9.3 ##
+## Version 0.96.9.4 ##
 ######################
 
 ####### EDIT ONLY THESE SETTINGS #######
+
+## any comments left with 2 #'s are updates to the script made by me (syaoran68)
 
 # INSTRUCTIONS
 # 1. Change the name of the rclone remote and shares to match your setup
@@ -15,15 +17,15 @@
 # 4. Optional: include extra folders in mergerfs mount
 
 # REQUIRED SETTINGS
-RcloneRemoteName="gdrive_vfs" # Name of rclone remote mount WITHOUT ':'. NOTE: Choose your encrypted remote for sensitive data
+RcloneRemoteName="crypt" # Name of rclone remote mount WITHOUT ':'. NOTE: Choose your encrypted remote for sensitive data ## updated naming to crypt its more generic and also doesn't lead on to what service your using
 RcloneMountShare="/mnt/user/mount_rclone" # where your rclone remote will be located without trailing slash  e.g. /mnt/user/mount_rclone
-RcloneMountDirCacheTime="720h" # rclone dir cache time
-LocalFilesShare="/mnt/user/local" # location of the local files and MountFolders you want to upload without trailing slash to rclone e.g. /mnt/user/local. Enter 'ignore' to disable
-RcloneCacheShare="/mnt/user0/mount_rclone" # location of rclone cache files without trailing slash e.g. /mnt/user0/mount_rclone
-RcloneCacheMaxSize="400G" # Maximum size of rclone cache
-RcloneCacheMaxAge="336h" # Maximum age of cache files
+RcloneMountDirCacheTime="169h" # rclone dir cache time ## lowered this down from 720 to 169, but in all honestly this can be something even lower if you have low amounts of space. ideally you want this to fill up to about HALF of the scratch space you want to use on the disc for caching.
+LocalFilesShare="/mnt/user/local" # location of the local files and MountFolders you want to upload without trailing slash to rclone e.g. /mnt/user/local. Enter 'ignore' to disable ## this is the directory where items are added to when you add files into your MergerFS directory.
+RcloneCacheShare="/mnt/user/cache_rclone" # location of rclone cache files without trailing slash e.g. /mnt/user0/mount_rclone ## this is specifically for when rclone is downloading files from the cloud onto your local storage.
+RcloneCacheMaxSize="400G" # Maximum size of rclone cache ## this can be set to whatever you want, but i would suggest it to be half of what you want the cache to take up locally. Also it will sometimes go a little over this as it flexes to accomodate files that are currently playing and unable to be scrubbed.
+RcloneCacheMaxAge="336h" # Maximum age of cache files ## i'd also set this age dependent on how much data you plan to pull from rclone. 
 MergerfsMountShare="/mnt/user/mount_mergerfs" # location without trailing slash  e.g. /mnt/user/mount_mergerfs. Enter 'ignore' to disable
-DockerStart="nzbget plex sonarr radarr ombi" # list of dockers, separated by space, to start once mergerfs mount verified. Remember to disable AUTOSTART for dockers added in docker settings page
+DockerStart="nzbget plex sonarr radarr ombi" # list of dockers, separated by space, to start once mergerfs mount verified. Remember to disable AUTOSTART for dockers added in docker settings page 
 MountFolders=\{"downloads/complete,downloads/intermediate,downloads/seeds,movies,tv"\} # comma separated list of folders to create within the mount
 
 # Note: Again - remember to NOT use ':' in your remote name above
@@ -58,8 +60,11 @@ VirtualIPNumber="2" # creates eth0:x e.g. eth0:1.  I create a unique virtual IP 
 
 ####### Preparing mount location variables #######
 RcloneMountLocation="$RcloneMountShare/$RcloneRemoteName" # Location for rclone mount
+echo "$(date "+%d.%m.%Y %T") INFO: Success ${RcloneRemoteName} remote is already mounted." ## added this echo so we can confirm the full pathing
 LocalFilesLocation="$LocalFilesShare/$RcloneRemoteName" # Location for local files to be merged with rclone mount
+echo "$(date "+%d.%m.%Y %T") LocalFilesLocation= ${LocalFilesLocation}" ## added this echo so we can confirm the full pathing
 MergerFSMountLocation="$MergerfsMountShare/$RcloneRemoteName" # Rclone data folder location
+echo "$(date "+%d.%m.%Y %T") MergerFSMountLocation= ${MergerFSMountLocation}" ## added this echo so we can confirm the full pathing
 
 ####### create directories for rclone mount and mergerfs mounts #######
 mkdir -p /mnt/user/appdata/other/rclone/remotes/$RcloneRemoteName # for script files
@@ -135,7 +140,9 @@ else
 	rclone mount \
 	$Command1 $Command2 $Command3 $Command4 $Command5 $Command6 $Command7 $Command8 \
 	--allow-other \
-	--umask 000 \
+	--umask 002 \ ##update the masking to 002 so that we can give the files default permissions
+	--uid 99 \ ## this allocates the mounted files to have the same owner as what most of your dockers use.
+	--gid 100 \ ## this allocates the mounted files to have the same group as what most of your dockers use.
 	--dir-cache-time $RcloneMountDirCacheTime \
 	--attr-timeout $RcloneMountDirCacheTime \
 	--log-level INFO \
