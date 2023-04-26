@@ -3,10 +3,25 @@
 #######################
 ### Cleanup Script ####
 #######################
-#### Version 0.9.2 ####
+#### Version 0.9.3 ####
 #######################
 
+RcloneRemoteName="crypt" # Name of rclone remote mount WITHOUT ':'.
+RcloneMountShare="/mnt/user/mount_rclone"
+LocalFilesShare="/mnt/user/Media"
+RcloneCacheShare="/mnt/user/cache_rclone"
+MergerfsMountShare="/mnt/user/crypt_mergerfs"
+
 echo "$(date "+%d.%m.%Y %T") INFO: *** Starting rclone_cleanup script ***"
+
+####### Unmount Rclone ####### we need to unmount all the existing locations for when restarting unraid.
+
+umount -l $MergerfsMountShare/$RcloneRemoteName
+umount -l $RcloneMountShare/$RcloneRemoteName
+umount -l $RcloneCacheShare/cache/$RcloneRemoteName
+umount -l $LocalFilesShare/$RcloneRemoteName
+
+rm -r $RcloneCacheShare/cache/$RcloneRemoteName ## this cache drive needs to get removed most of the time due to it being stale and rclone doesn't like it as much. 
 
 ####### Cleanup Tracking Files #######
 
